@@ -2,6 +2,18 @@
 
 class SvgMin
 
+  def run(argv)
+    argv.each do |arg|
+      if File.exist?(arg) then
+        minify_file(arg)
+      else
+        error("file '" + arg + '" does not exist.' + "\n")
+      end
+    end
+  end
+
+  private
+
   def minify_file(path)
     tmp = get_tmp_file_name
 
@@ -63,16 +75,6 @@ class SvgMin
   def error(message)
     puts "error: " + message
     exit 1
-  end
-
-  def run(argv)
-    argv.each do |arg|
-      if File.exist?(arg) then
-        minify_file(arg)
-      else
-        error("file '" + arg + '" does not exist.' + "\n")
-      end
-    end
   end
 
 end

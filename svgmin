@@ -63,6 +63,12 @@ class SvgMin
         part = part[0 .. -4] + '/>'
       end
 
+      # Cut decimals in float values
+      part = part.gsub(/([0-9]+)\.([0-9]+)/) do |m|
+        m = m.split('.')
+        m = m[0] + '.' + m[1][0 .. 3]
+      end
+
       xml += part
     end
     return xml

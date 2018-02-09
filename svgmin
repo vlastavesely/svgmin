@@ -1,1 +1,36 @@
 #!/usr/bin/env ruby
+
+class SvgMin
+
+  def minify(path)
+    output = path + "z"
+    retval = convert_to_plain_svg(path, output)
+    if retval != 0 then
+      error("failed to convert '" + path + "' to a plain SVG file.")
+    end
+  end
+
+  def convert_to_plain_svg(input, output)
+    retval = system 'inkscape ' + input + ' -l ' + output
+    return retval == true ? 0 : 1
+  end
+
+  def error(message)
+    puts "error: " + message
+    exit 1
+  end
+
+  def run(argv)
+    argv.each do |arg|
+      if File.exist?(arg) then
+        minify(arg)
+      else
+        error("file '" + arg + '" does not exist.' + "\n")
+      end
+    end
+  end
+
+end
+
+program = SvgMin.new
+program.run(ARGV)

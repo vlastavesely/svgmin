@@ -2,17 +2,62 @@
 
 class SvgMin
 
-  def minify(path)
-    output = path + "z"
-    retval = convert_to_plain_svg(path, output)
-    if retval != 0 then
+  def minify_file(path)
+    tmp = get_tmp_file_name
+
+    retval = convert_to_plain_svg(path, tmp)
+    if retval != true then
       error("failed to convert '" + path + "' to a plain SVG file.")
     end
+
+    xml = File.read(tmp)
+    xml = minify_xml(xml)
+    File.write(tmp, xml)
+
+    output = path + "z"
+    retval = system 'gzip -9 -c ' + tmp + " >" + output
+    if retval != true
+      error("failed to gzip '" + path + "'")
+    end
+
+    File.delete(tmp)
   end
 
   def convert_to_plain_svg(input, output)
-    retval = system 'inkscape ' + input + ' -l ' + output
-    return retval == true ? 0 : 1
+    return system 'inkscape ' + input + ' -l ' + output
+  end
+
+  def minify_xml(xml)
+    parts = xml.split(/(<[^>]*>)/)
+    xml = ''
+
+    parts.each.each do |part|
+
+      # Strip whitespaces
+      part.strip!
+
+      # Skip all comments
+      if part.start_with? '<!--' then
+        next
+      end
+
+      # Reduce spaces in tags
+      if part.start_with? '<' then
+        part = part.gsub(/\s+/, ' ')
+      end
+
+      # Remove space before end of an empty tag
+      if part[-2 .. -1] == '/>' then
+        part = part[0 .. -4] + '/>'
+      end
+
+      xml += part
+    end
+    return xml
+  end
+
+  def get_tmp_file_name
+    return '/tmp/' + [*('A'..'Z')].sample(11).join + '.svg'
   end
 
   def error(message)
@@ -23,7 +68,7 @@ class SvgMin
   def run(argv)
     argv.each do |arg|
       if File.exist?(arg) then
-        minify(arg)
+        minify_file(arg)
       else
         error("file '" + arg + '" does not exist.' + "\n")
       end

@@ -1,0 +1,5 @@
+SVG Minifier
+============
+This is a small ruby script that reduces size of SVG images.
+
+It requires Inkscape and GZip installed.
